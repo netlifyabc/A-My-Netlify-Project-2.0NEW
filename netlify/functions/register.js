@@ -1,17 +1,15 @@
 
-  // netlify/functions/register.js
+// netlify/functions/register.js
 
-exports.handler = async function(event) {
-  const ALLOWED_ORIGIN = 'https://netlifyabc.github.io/A-My-Netlify-Project-2.0NEW/public/';
-
+exports.handler = async function (event) {
   const headers = {
-    'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+    'Access-Control-Allow-Origin': 'https://netlifyabc.github.io/A-My-Netlify-Project-2.0NEW/public/',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Content-Type': 'application/json',
   };
 
-  // 处理 CORS 预检请求
+  // 处理预检请求
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
@@ -20,7 +18,6 @@ exports.handler = async function(event) {
     };
   }
 
-  // 拒绝非 POST 请求
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
@@ -61,22 +58,15 @@ exports.handler = async function(event) {
             email
           }
           customerUserErrors {
-            message
             field
-            code
+            message
           }
         }
       }
     `;
 
     const variables = {
-      input: {
-        firstName,
-        lastName,
-        email,
-        password,
-        acceptsMarketing: false,
-      },
+      input: { firstName, lastName, email, password, acceptsMarketing: false },
     };
 
     const fetch = (await import('node-fetch')).default;
@@ -90,15 +80,15 @@ exports.handler = async function(event) {
       body: JSON.stringify({ query, variables }),
     });
 
-    const result = await response.json();
+    const data = await response.json();
 
-    if (result.errors || result.data.customerCreate.customerUserErrors.length > 0) {
+    if (data.errors || data.data.customerCreate.customerUserErrors.length > 0) {
       return {
         statusCode: 400,
         headers,
         body: JSON.stringify({
-          error: 'Shopify error',
-          details: result.errors || result.data.customerCreate.customerUserErrors,
+          error: 'Shopify Error',
+          details: data.errors || data.data.customerCreate.customerUserErrors,
         }),
       };
     }
@@ -108,18 +98,14 @@ exports.handler = async function(event) {
       headers,
       body: JSON.stringify({
         message: 'Customer created successfully',
-        customer: result.data.customerCreate.customer,
+        customer: data.data.customerCreate.customer,
       }),
     };
-  } catch (error) {
+  } catch (err) {
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Internal Server Error', details: error.message }),
+      body: JSON.stringify({ error: 'Server error', details: err.message }),
     };
   }
 };
-
-
-
-
