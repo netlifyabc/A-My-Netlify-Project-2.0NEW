@@ -820,7 +820,7 @@
     <svg class="icon-user" width="20" height="20" viewBox="0 0 24 24">
       <path fill="currentColor" d="M12 12a5 5 0 10-5-5 5 5 0 005 5zm0 2c-4.091 0-8 2.045-8 4.5V21h16v-2.5c0-2.455-3.909-4.5-8-4.5z"/>
     </svg>
-  <span id="signInText">Sign In</span> 
+    <span>Sign In</span>
   </a>
   <a href="#" class="btn-cart">
     <!-- 购物车图标 -->
@@ -1118,7 +1118,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     
 
-    document.addEventListener('DOMContentLoaded', () => {
+   document.addEventListener('DOMContentLoaded', () => {
   const authModal = document.getElementById('authModal');
   const closeAuthBtn = document.getElementById('closeAuth');
   const authForm = document.getElementById('authForm');
@@ -1130,7 +1130,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const signInBtn = document.querySelector('.btn-signin');
   const signInText = document.getElementById('signInText');
 
-  // 创建消息提示区
   const messageDiv = document.createElement('div');
   messageDiv.id = 'message';
   messageDiv.className = 'result';
@@ -1139,21 +1138,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let isRegisterMode = false;
 
-  // 页面加载自动显示欢迎信息（如果有登录状态）
+  // ✅ 页面加载自动识别登录状态
   const savedName = localStorage.getItem('customerName');
   if (savedName && signInText) {
     signInText.textContent = `👋 欢迎, ${savedName}`;
   }
 
-  // 点击登录按钮弹出弹窗
-  signInBtn.addEventListener('click', (e) => {
-    e.preventDefault();
+  // 打开弹窗
+  signInBtn.addEventListener('click', () => {
     authModal.style.display = 'block';
     isRegisterMode = false;
     updateAuthFormUI();
   });
 
-  // 关闭弹窗按钮
+  // 关闭弹窗
   if (closeAuthBtn) {
     closeAuthBtn.addEventListener('click', () => {
       authModal.style.display = 'none';
@@ -1161,14 +1159,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 切换注册 / 登录模式
+  // 切换注册 / 登录
   toggleAuthMode.addEventListener('click', (e) => {
     e.preventDefault();
     isRegisterMode = !isRegisterMode;
     updateAuthFormUI();
   });
 
-  // 更新表单 UI 显示内容
   function updateAuthFormUI() {
     if (isRegisterMode) {
       authTitle.textContent = 'Register';
@@ -1182,7 +1179,7 @@ document.addEventListener("DOMContentLoaded", () => {
       authToggleText.innerHTML = `Don't have an account? <a href="#" id="toggleAuthModeLink">Register here</a>`;
     }
 
-    // 重新绑定切换事件，防止被替换的元素丢失事件
+    // 重新绑定切换事件
     const newToggle = document.getElementById('toggleAuthModeLink');
     if (newToggle) {
       newToggle.addEventListener('click', (event) => {
@@ -1195,7 +1192,6 @@ document.addEventListener("DOMContentLoaded", () => {
     authForm.reset();
   }
 
-  // 重置表单
   function resetForm() {
     authForm.reset();
     messageDiv.style.display = 'none';
@@ -1205,7 +1201,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // 表单提交事件
+  // 表单提交
   authForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     messageDiv.style.display = 'none';
@@ -1227,7 +1223,6 @@ document.addEventListener("DOMContentLoaded", () => {
           password: document.getElementById('authPassword').value,
         };
 
-    // 注册时校验名字
     if (isRegisterMode && (!data.firstName || !data.lastName)) {
       messageDiv.textContent = 'First Name and Last Name are required.';
       messageDiv.classList.add('error');
@@ -1254,7 +1249,7 @@ document.addEventListener("DOMContentLoaded", () => {
           isRegisterMode = false;
           updateAuthFormUI();
         } else {
-          // 登录成功逻辑
+          // ✅ 登录成功逻辑
           const customerName = result.customer?.firstName || '用户';
 
           // 显示欢迎消息
@@ -1262,13 +1257,13 @@ document.addEventListener("DOMContentLoaded", () => {
           messageDiv.classList.remove('error');
           messageDiv.style.display = 'block';
 
-          // 关闭弹窗
+          // ✅ 关闭弹窗
           authModal.style.display = 'none';
 
-          // 存储登录状态
+          // ✅ 存储状态
           localStorage.setItem('customerName', customerName);
 
-          // 替换按钮文字
+          // ✅ 替换按钮文字
           if (signInText) {
             signInText.textContent = `👋 欢迎, ${customerName}`;
           }
@@ -1282,6 +1277,7 @@ document.addEventListener("DOMContentLoaded", () => {
     messageDiv.style.display = 'block';
   });
 });
+
 
 </script>
 </body>
