@@ -1,11 +1,13 @@
+// netlify/functions/register.js
 exports.handler = async function(event) {
   const headers = {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': '*',  // 你可以换成你的 GitHub Pages 域名
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Content-Type': 'application/json',
   };
 
+  // 处理 CORS 预检请求
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
@@ -24,6 +26,7 @@ exports.handler = async function(event) {
 
   try {
     const { firstName, lastName, email, password } = JSON.parse(event.body);
+
     if (!firstName || !lastName || !email || !password) {
       return {
         statusCode: 400,
@@ -39,9 +42,11 @@ exports.handler = async function(event) {
       return {
         statusCode: 500,
         headers,
-        body: JSON.stringify({ error: 'Missing Shopify credentials' }),
+        body: JSON.stringify({ error: 'Missing Shopify Storefront API credentials' }),
       };
     }
+
+    const fetch = (await import('node-fetch')).default;
 
     const query = `
       mutation customerCreate($input: CustomerCreateInput!) {
@@ -61,9 +66,15 @@ exports.handler = async function(event) {
       }
     `;
 
-    const variables = { input: { firstName, lastName, email, password, acceptsMarketing: false } };
-
-    const fetch = (await import('node-fetch')).default;
+    const variables = {
+      input: {
+        firstName,
+        lastName,
+        email,
+        password,
+        acceptsMarketing: false,
+      },
+    };
 
     const response = await fetch(`https://${SHOP_DOMAIN}/api/2024-04/graphql.json`, {
       method: 'POST',
@@ -93,20 +104,23 @@ exports.handler = async function(event) {
       };
     }
 
-    if (result.data.customerCreate.customerUserErrors.length > 0) {
+    const userErrors = result.data.customerCreate.customerUserErrors;
+    if (userErrors.length > 0) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: 'User input error', details: result.data.customerCreate.customerUserErrors }),
+        body: JSON.stringify({ error: 'User input error', details: userErrors }),
       };
     }
+
+    const customer = result.data.customerCreate.customer;
 
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({
         message: 'Customer created successfully',
-        customer: result.data.customerCreate.customer,
+        customer,
       }),
     };
   } catch (error) {
@@ -119,7 +133,4 @@ exports.handler = async function(event) {
   }
 
 };
-
-
-
 
