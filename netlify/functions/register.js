@@ -1,32 +1,29 @@
-exports.handler = async function (event) {
-  // 处理预检请求（CORS）
+// netlify/functions/register.js
+
+exports.handler = async function(event) {
+  const headers = {
+    'Access-Control-Allow-Origin': '*', // 👈 允许所有来源跨域请求
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Content-Type': 'application/json',
+  };
+
+  // 👇 处理浏览器发起的预检请求
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*', // ← 或改为你的前端域名
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
+      headers,
       body: '',
     };
   }
 
-  // 只允许 POST 请求
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-      },
+      headers, // ✅ 包含 CORS
       body: JSON.stringify({ error: 'Method Not Allowed' }),
     };
   }
-
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Content-Type': 'application/json',
-  };
 
   try {
     const { firstName, lastName, email, password } = JSON.parse(event.body);
@@ -46,9 +43,7 @@ exports.handler = async function (event) {
       return {
         statusCode: 500,
         headers,
-        body: JSON.stringify({
-          error: 'Missing Shopify Storefront API credentials',
-        }),
+        body: JSON.stringify({ error: 'Missing Shopify Storefront API credentials' }),
       };
     }
 
@@ -80,6 +75,8 @@ exports.handler = async function (event) {
       },
     };
 
+    const fetch = (await import('node-fetch')).default;
+
     const response = await fetch(`https://${SHOP_DOMAIN}/api/2024-04/graphql.json`, {
       method: 'POST',
       headers: {
@@ -91,19 +88,16 @@ exports.handler = async function (event) {
 
     const result = await response.json();
 
-    if (response.status !== 200 || result.errors) {
+    if (result.errors) {
       return {
         statusCode: 500,
         headers,
-        body: JSON.stringify({
-          error: 'Shopify API returned error',
-          details: result.errors || 'Unknown error',
-        }),
+        body: JSON.stringify({ error: 'Shopify API returned errors', details: result.errors }),
       };
     }
 
     const userErrors = result.data.customerCreate.customerUserErrors;
-    if (userErrors && userErrors.length > 0) {
+    if (userErrors.length > 0) {
       return {
         statusCode: 400,
         headers,
@@ -111,25 +105,21 @@ exports.handler = async function (event) {
       };
     }
 
+    const customer = result.data.customerCreate.customer;
+
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({
-        message: 'Customer created successfully',
-        customer: result.data.customerCreate.customer,
-      }),
+      body: JSON.stringify({ message: 'Customer created successfully', customer }),
     };
-  } catch (err) {
-    console.error('Register error:', err);
+  } catch (error) {
+    console.error('Register error:', error);
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Internal Server Error', details: err.message }),
+      body: JSON.stringify({ error: 'Internal Server Error' }),
     };
   }
 };
-
-
-
 
 
