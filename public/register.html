@@ -1117,7 +1117,8 @@ document.addEventListener("DOMContentLoaded", () => {
      
 
     
-      document.addEventListener('DOMContentLoaded', () => {
+
+   document.addEventListener('DOMContentLoaded', () => {
   const authModal = document.getElementById('authModal');
   const closeAuthBtn = document.getElementById('closeAuth');
   const authForm = document.getElementById('authForm');
@@ -1127,24 +1128,28 @@ document.addEventListener("DOMContentLoaded", () => {
   const nameFields = document.getElementById('nameFields');
   const submitBtn = document.getElementById('authSubmitBtn');
   const signInBtn = document.querySelector('.btn-signin');
+  const signInText = document.getElementById('signInText');
 
-  let isRegisterMode = false;
-
-  // 消息框
   const messageDiv = document.createElement('div');
   messageDiv.id = 'message';
   messageDiv.className = 'result';
   messageDiv.style.display = 'none';
   authForm.appendChild(messageDiv);
 
-  // 打开登录弹窗
-  if (signInBtn) {
-    signInBtn.addEventListener('click', () => {
-      authModal.style.display = 'block';
-      isRegisterMode = false;
-      updateAuthFormUI();
-    });
+  let isRegisterMode = false;
+
+  // ✅ 页面加载自动识别登录状态
+  const savedName = localStorage.getItem('customerName');
+  if (savedName && signInText) {
+    signInText.textContent = `👋 欢迎, ${savedName}`;
   }
+
+  // 打开弹窗
+  signInBtn.addEventListener('click', () => {
+    authModal.style.display = 'block';
+    isRegisterMode = false;
+    updateAuthFormUI();
+  });
 
   // 关闭弹窗
   if (closeAuthBtn) {
@@ -1154,32 +1159,31 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 切换登录/注册
+  // 切换注册 / 登录
   toggleAuthMode.addEventListener('click', (e) => {
     e.preventDefault();
     isRegisterMode = !isRegisterMode;
     updateAuthFormUI();
   });
 
-  // 更新 UI
   function updateAuthFormUI() {
     if (isRegisterMode) {
       authTitle.textContent = 'Register';
       submitBtn.textContent = 'Register';
       nameFields.style.display = 'block';
-      authToggleText.innerHTML = 'Already have an account? <a href="#" id="toggleAuthModeLink">Sign In</a>';
+      authToggleText.innerHTML = `Already have an account? <a href="#" id="toggleAuthModeLink">Sign In</a>`;
     } else {
       authTitle.textContent = 'Sign In';
       submitBtn.textContent = 'Sign In';
       nameFields.style.display = 'none';
-      authToggleText.innerHTML = 'Don\'t have an account? <a href="#" id="toggleAuthModeLink">Register here</a>';
+      authToggleText.innerHTML = `Don't have an account? <a href="#" id="toggleAuthModeLink">Register here</a>`;
     }
 
-    // 动态绑定切换链接
+    // 重新绑定切换事件
     const newToggle = document.getElementById('toggleAuthModeLink');
     if (newToggle) {
-      newToggle.addEventListener('click', (e) => {
-        e.preventDefault();
+      newToggle.addEventListener('click', (event) => {
+        event.preventDefault();
         toggleAuthMode.click();
       });
     }
@@ -1188,15 +1192,16 @@ document.addEventListener("DOMContentLoaded", () => {
     authForm.reset();
   }
 
-  // 重置表单
   function resetForm() {
     authForm.reset();
     messageDiv.style.display = 'none';
-    isRegisterMode = false;
-    updateAuthFormUI();
+    if (isRegisterMode) {
+      isRegisterMode = false;
+      updateAuthFormUI();
+    }
   }
 
-  // 表单提交逻辑
+  // 表单提交
   authForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     messageDiv.style.display = 'none';
@@ -1235,14 +1240,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const result = await response.json();
 
       if (!response.ok) {
-        messageDiv.textContent = (isRegisterMode ? '注册' : '登录') + '失败: ' + (result.error || JSON.stringify(result));
+        messageDiv.textContent =
+          (isRegisterMode ? '注册' : '登录') + '失败: ' + (result.error || JSON.stringify(result));
         messageDiv.classList.add('error');
       } else {
         if (isRegisterMode) {
-          messageDiv.textContent = '注册成功! ' + result.message + '\n客户ID: ' + (result.customer?.id || '');
+          messageDiv.textContent = '注册成功! ' + result.message;
           isRegisterMode = false;
           updateAuthFormUI();
         } else {
+          // ✅ 登录成功逻辑
           const customerName = result.customer?.firstName || '用户';
 
           // 显示欢迎消息
@@ -1256,20 +1263,10 @@ document.addEventListener("DOMContentLoaded", () => {
           // ✅ 存储状态
           localStorage.setItem('customerName', customerName);
 
-          // ✅ 隐藏登录按钮
-          if (signInBtn) signInBtn.style.display = 'none';
-
-          // ✅ 显示欢迎信息
-          let welcomeDiv = document.getElementById('welcomeUser');
-          if (!welcomeDiv) {
-            welcomeDiv = document.createElement('div');
-            welcomeDiv.id = 'welcomeUser';
-            welcomeDiv.className = 'welcome-user';
-
-            const nav = document.querySelector('nav') || document.body;
-            nav.appendChild(welcomeDiv);
+          // ✅ 替换按钮文字
+          if (signInText) {
+            signInText.textContent = `👋 欢迎, ${customerName}`;
           }
-          welcomeDiv.textContent = `👋 欢迎, ${customerName}`;
         }
       }
     } catch (err) {
@@ -1284,5 +1281,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </script>
 </body>
-</html> 
 
+</html> 
