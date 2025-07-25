@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shopify 注册测试</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: #f9f9f9;
+      padding: 20px;
+      max-width: 400px;
+      margin: 40px auto;
+      box-shadow: 0 0 10px #ccc;
+      border-radius: 8px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: 600;
+      color: #555;
+    }
+    input {
+      width: 100%;
+      padding: 8px 10px;
+      margin-top: 5px;
+      border: 1px solid #bbb;
+      border-radius: 4px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      background-color: #2a9d8f;
+      color: white;
+      border: none;
+      padding: 12px;
+      font-size: 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #21867a;
+    }
+    .message {
+      margin-top: 15px;
+      font-weight: 600;
+      color: #e63946;
+      text-align: center;
+    }
+    .success {
+      color: #2a9d8f;
+    }
+  </style>
+</head>
+<body>
+  <h1>Shopify 注册</h1>
+  <form id="registerForm">
+    <label for="firstName">姓：</label>
+    <input type="text" id="firstName" name="firstName" required />
+
+    <label for="lastName">名：</label>
+    <input type="text" id="lastName" name="lastName" required />
+
+    <label for="email">邮箱：</label>
+    <input type="email" id="email" name="email" required />
+
+    <label for="password">密码：</label>
+    <input type="password" id="password" name="password" required minlength="8" />
+
+    <button type="submit">注册</button>
+  </form>
+  <div class="message" id="message"></div>
+
+  <script>
+    const form = document.getElementById('registerForm');
+    const messageEl = document.getElementById('message');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      messageEl.textContent = '';
+      messageEl.classList.remove('success');
+
+      const formData = {
+        firstName: form.firstName.value.trim(),
+        lastName: form.lastName.value.trim(),
+        email: form.email.value.trim(),
+        password: form.password.value,
+      };
+
+      try {
+        const response = await fetch('/.netlify/functions/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          messageEl.textContent = data.error || '请求失败，请稍后再试';
+          return;
+        }
+
+        messageEl.textContent = data.message || '注册成功！';
+        messageEl.classList.add('success');
+
+        // 可选：清空表单
+        form.reset();
+
+      } catch (err) {
+        messageEl.textContent = '请求失败：' + err.message;
+      }
+    });
+  </script>
+</body>
+</html>
+
+

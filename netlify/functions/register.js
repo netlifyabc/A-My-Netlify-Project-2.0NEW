@@ -1,14 +1,11 @@
-// netlify/functions/register.js
-
 exports.handler = async function(event) {
   const headers = {
-    'Access-Control-Allow-Origin': '*', // 👈 允许所有来源跨域请求
+    'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Content-Type': 'application/json',
   };
 
-  // 👇 处理浏览器发起的预检请求
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
@@ -20,14 +17,13 @@ exports.handler = async function(event) {
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
-      headers, // ✅ 包含 CORS
+      headers,
       body: JSON.stringify({ error: 'Method Not Allowed' }),
     };
   }
 
   try {
     const { firstName, lastName, email, password } = JSON.parse(event.body);
-
     if (!firstName || !lastName || !email || !password) {
       return {
         statusCode: 400,
@@ -43,7 +39,7 @@ exports.handler = async function(event) {
       return {
         statusCode: 500,
         headers,
-        body: JSON.stringify({ error: 'Missing Shopify Storefront API credentials' }),
+        body: JSON.stringify({ error: 'Missing Shopify credentials' }),
       };
     }
 
@@ -65,15 +61,7 @@ exports.handler = async function(event) {
       }
     `;
 
-    const variables = {
-      input: {
-        firstName,
-        lastName,
-        email,
-        password,
-        acceptsMarketing: false,
-      },
-    };
+    const variables = { input: { firstName, lastName, email, password, acceptsMarketing: false } };
 
     const fetch = (await import('node-fetch')).default;
 
@@ -86,6 +74,15 @@ exports.handler = async function(event) {
       body: JSON.stringify({ query, variables }),
     });
 
+    if (!response.ok) {
+      const text = await response.text();
+      return {
+        statusCode: response.status,
+        headers,
+        body: JSON.stringify({ error: 'Shopify API request failed', details: text }),
+      };
+    }
+
     const result = await response.json();
 
     if (result.errors) {
@@ -96,21 +93,21 @@ exports.handler = async function(event) {
       };
     }
 
-    const userErrors = result.data.customerCreate.customerUserErrors;
-    if (userErrors.length > 0) {
+    if (result.data.customerCreate.customerUserErrors.length > 0) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: 'User input error', details: userErrors }),
+        body: JSON.stringify({ error: 'User input error', details: result.data.customerCreate.customerUserErrors }),
       };
     }
-
-    const customer = result.data.customerCreate.customer;
 
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ message: 'Customer created successfully', customer }),
+      body: JSON.stringify({
+        message: 'Customer created successfully',
+        customer: result.data.customerCreate.customer,
+      }),
     };
   } catch (error) {
     console.error('Register error:', error);
@@ -120,6 +117,9 @@ exports.handler = async function(event) {
       body: JSON.stringify({ error: 'Internal Server Error' }),
     };
   }
+
 };
+
+
 
 
