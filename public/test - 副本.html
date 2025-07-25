@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>登录 / 注册测试</title>
+<style>
+  /* 简单样式，仅作示例 */
+  body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 2rem; }
+  .btn-signin {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    background: #7e3ff2;
+    color: #fff;
+    border-radius: 4px;
+    text-decoration: none;
+  }
+  .btn-signin svg { margin-right: 0.5rem; }
+
+  .auth-modal {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    left: 0; top: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+  }
+  .auth-modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 6px;
+    max-width: 400px;
+    width: 100%;
+    position: relative;
+  }
+  .close-auth {
+    position: absolute;
+    top: 0.5rem;
+    right: 1rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+  form input {
+    width: 100%;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    font-size: 1rem;
+  }
+  form button {
+    width: 100%;
+    padding: 0.7rem;
+    background: #7e3ff2;
+    border: none;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  #message {
+    margin-top: 1rem;
+    padding: 0.5rem;
+    border-radius: 4px;
+    display: none;
+  }
+  #message.error {
+    background: #fdd;
+    color: #900;
+  }
+  #message.success {
+    background: #dfd;
+    color: #090;
+  }
+</style>
+</head>
+<body>
+
+<a href="#" class="btn-signin" id="signInBtn">
+  <svg class="icon-user" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 12a5 5 0 10-5-5 5 5 0 005 5zm0 2c-4.091 0-8 2.045-8 4.5V21h16v-2.5c0-2.455-3.909-4.5-8-4.5z"/>
+  </svg>
+  <span id="signInText">Sign In</span>
+</a>
+
+<!-- 登录/注册弹窗 -->
+<div id="authModal" class="auth-modal">
+  <div class="auth-modal-content">
+    <span class="close-auth" id="closeAuth">&times;</span>
+    <h2 id="authTitle">Sign In</h2>
+    <form id="authForm">
+      <div id="nameFields" style="display:none;">
+        <input type="text" id="authFirstName" placeholder="First Name" />
+        <input type="text" id="authLastName" placeholder="Last Name" />
+      </div>
+      <input type="email" id="authEmail" placeholder="Email" required />
+      <input type="password" id="authPassword" placeholder="Password" required />
+      <button type="submit" id="authSubmitBtn">Sign In</button>
+      <div id="message"></div>
+    </form>
+    <p id="authToggleText">
+      Don't have an account? <a href="#" id="toggleAuthMode">Register here</a>
+    </p>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const authModal = document.getElementById('authModal');
+    const closeAuthBtn = document.getElementById('closeAuth');
+    const authForm = document.getElementById('authForm');
+    const authTitle = document.getElementById('authTitle');
+    const toggleAuthMode = document.getElementById('toggleAuthMode');
+    const nameFields = document.getElementById('nameFields');
+    const submitBtn = document.getElementById('authSubmitBtn');
+    const signInBtn = document.getElementById('signInBtn');
+    const signInText = document.getElementById('signInText');
+    const messageDiv = document.getElementById('message');
+
+    let isRegisterMode = false;
+
+    // 显示弹窗
+    signInBtn.addEventListener('click', e => {
+      e.preventDefault();
+      authModal.style.display = 'flex';
+      isRegisterMode = false;
+      updateAuthFormUI();
+    });
+
+    // 关闭弹窗
+    closeAuthBtn.addEventListener('click', () => {
+      authModal.style.display = 'none';
+      resetForm();
+    });
+
+    // 切换登录/注册模式
+    toggleAuthMode.addEventListener('click', e => {
+      e.preventDefault();
+      isRegisterMode = !isRegisterMode;
+      updateAuthFormUI();
+    });
+
+    function updateAuthFormUI() {
+      if (isRegisterMode) {
+        authTitle.textContent = 'Register';
+        submitBtn.textContent = 'Register';
+        nameFields.style.display = 'block';
+        toggleAuthMode.textContent = 'Sign In';
+        toggleAuthMode.parentElement.firstChild.textContent = 'Already have an account? ';
+      } else {
+        authTitle.textContent = 'Sign In';
+        submitBtn.textContent = 'Sign In';
+        nameFields.style.display = 'none';
+        toggleAuthMode.textContent = 'Register here';
+        toggleAuthMode.parentElement.firstChild.textContent = "Don't have an account? ";
+      }
+      messageDiv.style.display = 'none';
+      authForm.reset();
+    }
+
+    function resetForm() {
+      authForm.reset();
+      messageDiv.style.display = 'none';
+    }
+
+    // 模拟表单提交
+    authForm.addEventListener('submit', e => {
+      e.preventDefault();
+      messageDiv.style.display = 'none';
+
+      // 简单前端验证示例
+      if (isRegisterMode) {
+        const firstName = document.getElementById('authFirstName').value.trim();
+        const lastName = document.getElementById('authLastName').value.trim();
+        if (!firstName || !lastName) {
+          showMessage('First Name and Last Name are required.', 'error');
+          return;
+        }
+      }
+
+      // 模拟网络请求
+      showMessage('提交中...', '');
+      setTimeout(() => {
+        if (isRegisterMode) {
+          showMessage('注册成功！', 'success');
+          // 这里可以保存用户名，模拟登录状态
+          const firstName = document.getElementById('authFirstName').value.trim();
+          localStorage.setItem('customerName', firstName);
+          signInText.textContent = `👋 欢迎, ${firstName}`;
+          setTimeout(() => authModal.style.display = 'none', 1500);
+        } else {
+          showMessage('登录成功！', 'success');
+          // 模拟用户名
+          localStorage.setItem('customerName', '用户');
+          signInText.textContent = '👋 欢迎, 用户';
+          setTimeout(() => authModal.style.display = 'none', 1500);
+        }
+      }, 1000);
+    });
+
+    function showMessage(msg, type) {
+      messageDiv.textContent = msg;
+      messageDiv.className = '';
+      if (type) messageDiv.classList.add(type);
+      messageDiv.style.display = 'block';
+    }
+
+    // 页面加载自动显示欢迎（模拟）
+    const savedName = localStorage.getItem('customerName');
+    if (savedName) {
+      signInText.textContent = `👋 欢迎, ${savedName}`;
+    }
+  });
+</script>
+
+</body>
+</html>
+
+
