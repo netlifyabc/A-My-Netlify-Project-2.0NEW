@@ -1,9 +1,6 @@
-// netlify/functions/add-to-cart.js
-
 const { createCartWithItem } = require('../../lib/shopify');
 
 exports.handler = async function(event) {
-  // 处理 CORS 预检请求
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
@@ -40,10 +37,8 @@ exports.handler = async function(event) {
       };
     }
 
-    // 调用你的 Shopify 创建购物车并添加商品方法
     const result = await createCartWithItem(merchandiseId, quantity);
 
-    // 处理 Shopify 返回的用户错误
     if (result.userErrors && result.userErrors.length > 0) {
       return {
         statusCode: 400,
@@ -52,7 +47,6 @@ exports.handler = async function(event) {
       };
     }
 
-    // 成功返回购物车数据
     return {
       statusCode: 200,
       headers,
@@ -67,3 +61,5 @@ exports.handler = async function(event) {
     };
   }
 };
+
+
