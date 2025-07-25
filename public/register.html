@@ -1106,10 +1106,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-
 document.addEventListener('DOMContentLoaded', () => {
   const authModal = document.getElementById('authModal');
-  const openAuthBtn = document.getElementById('openAuthBtn');
+  // const openAuthBtn = document.getElementById('openAuthBtn'); // 你没用这个ID了吧？
   const closeAuthBtn = document.getElementById('closeAuth');
 
   const authForm = document.getElementById('authForm');
@@ -1128,31 +1127,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let isRegisterMode = false;
 
-// 打开弹窗（点击按钮）
-document.querySelector('.btn-signin').addEventListener('click', () => {
-  authModal.style.display = 'block';
-  isLogin = true;
-  updateForm();
-});
+  // 【重点改动】用你的原始按钮选择器
+  document.querySelector('.btn-signin').addEventListener('click', () => {
+    authModal.style.display = 'block';
+    isRegisterMode = false; // 默认打开登录模式
+    updateAuthFormUI();
+  });
 
-// 关闭弹窗
-closeAuth.addEventListener('click', () => {
-  authModal.style.display = 'none';
-});
+  // 关闭弹窗
+  if (closeAuthBtn) {
+    closeAuthBtn.addEventListener('click', () => {
+      authModal.style.display = 'none';
+      resetForm();
+    });
+  }
 
-// 切换 登录 / 注册
-toggleAuthMode.addEventListener('click', (e) => {
-  e.preventDefault();
-  isLogin = !isLogin;
-  updateForm();
-});
-
-
-  // 切换注册/登录
+  // 切换登录/注册
   toggleAuthMode.addEventListener('click', (e) => {
     e.preventDefault();
     isRegisterMode = !isRegisterMode;
+    updateAuthFormUI();
+  });
 
+  // 更新表单UI状态
+  function updateAuthFormUI() {
     if (isRegisterMode) {
       authTitle.textContent = 'Register';
       submitBtn.textContent = 'Register';
@@ -1165,18 +1163,30 @@ toggleAuthMode.addEventListener('click', (e) => {
       authToggleText.innerHTML = 'Don\'t have an account? <a href="#" id="toggleAuthMode">Register here</a>';
     }
 
-    // 重新绑定切换事件
+    // 重新绑定切换事件给动态生成的链接
     const newToggle = authToggleText.querySelector('a');
-    newToggle.addEventListener('click', (event) => {
-      event.preventDefault();
-      toggleAuthMode.click();
-    });
+    if (newToggle) {
+      newToggle.addEventListener('click', (event) => {
+        event.preventDefault();
+        toggleAuthMode.click();
+      });
+    }
 
     messageDiv.style.display = 'none';
     authForm.reset();
-  });
+  }
 
-  // 提交表单处理
+  // 重置表单和消息
+  function resetForm() {
+    authForm.reset();
+    messageDiv.style.display = 'none';
+    if (isRegisterMode) {
+      isRegisterMode = false;
+      updateAuthFormUI();
+    }
+  }
+
+  // 表单提交处理
   authForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     messageDiv.style.display = 'none';
@@ -1212,7 +1222,8 @@ toggleAuthMode.addEventListener('click', (e) => {
         } else {
           messageDiv.textContent = '注册成功! ' + result.message + '\n客户ID: ' + (result.customer?.id || '');
           messageDiv.classList.remove('error');
-          toggleAuthMode.click(); // 自动切换登录模式
+          isRegisterMode = false;
+          updateAuthFormUI();
         }
       } catch (err) {
         messageDiv.textContent = '请求失败: ' + err.message;
@@ -1240,11 +1251,8 @@ toggleAuthMode.addEventListener('click', (e) => {
           messageDiv.textContent = '登录失败: ' + (result.error || JSON.stringify(result));
           messageDiv.classList.add('error');
         } else {
-          messageDiv.textContent = '登录成功! 欢迎您，' + (result.customer?.firstName || '') + '。';
+          messageDiv.textContent = '登录成功! 欢迎您，' + (result.customer?.firstName || '');
           messageDiv.classList.remove('error');
-          // 登录成功可以关闭弹窗或跳转
-          // authModal.style.display = 'none';
-          // resetForm();
         }
       } catch (err) {
         messageDiv.textContent = '请求失败: ' + err.message;
@@ -1254,17 +1262,8 @@ toggleAuthMode.addEventListener('click', (e) => {
       messageDiv.style.display = 'block';
     }
   });
-
-  function resetForm() {
-    authForm.reset();
-    messageDiv.style.display = 'none';
-    if (isRegisterMode) {
-      toggleAuthMode.click(); // 切回登录模式
-    }
-  }
-}); 
-
+});
+ 
 </script>
 </body>
 </html> 
-
