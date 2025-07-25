@@ -1,8 +1,9 @@
 // netlify/functions/register.js
 
 exports.handler = async function(event) {
-  // 允许的跨域源，改成你的前端域名或者使用 '*'
-  const ALLOWED_ORIGIN = '*';
+  // 明确写出你前端的完整域名，保证跨域安全
+  const ALLOWED_ORIGIN = 'https://netlifyabc.github.io/A-My-Netlify-Project-2.0NEW/public/';
+
 
   const headers = {
     'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
@@ -139,7 +140,6 @@ exports.handler = async function(event) {
       body: JSON.stringify({ error: 'Internal Server Error', details: error.message }),
     };
   }
-
 
 
 
