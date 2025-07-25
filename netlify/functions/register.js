@@ -1,13 +1,17 @@
 // netlify/functions/register.js
+
 exports.handler = async function(event) {
+  // 允许的跨域源，改成你的前端域名或者使用 '*'
+  const ALLOWED_ORIGIN = '*';
+
   const headers = {
-    'Access-Control-Allow-Origin': '*',  // 你可以换成你的 GitHub Pages 域名
+    'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Content-Type': 'application/json',
   };
 
-  // 处理 CORS 预检请求
+  // 处理 CORS 预检请求（OPTIONS）
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
@@ -16,6 +20,7 @@ exports.handler = async function(event) {
     };
   }
 
+  // 只允许 POST 请求
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
@@ -25,6 +30,7 @@ exports.handler = async function(event) {
   }
 
   try {
+    // 解析请求体 JSON
     const { firstName, lastName, email, password } = JSON.parse(event.body);
 
     if (!firstName || !lastName || !email || !password) {
@@ -46,8 +52,7 @@ exports.handler = async function(event) {
       };
     }
 
-    const fetch = (await import('node-fetch')).default;
-
+    // GraphQL mutation
     const query = `
       mutation customerCreate($input: CustomerCreateInput!) {
         customerCreate(input: $input) {
@@ -75,6 +80,9 @@ exports.handler = async function(event) {
         acceptsMarketing: false,
       },
     };
+
+    // 动态导入 fetch 避免 ESM/CJS 问题
+    const fetch = (await import('node-fetch')).default;
 
     const response = await fetch(`https://${SHOP_DOMAIN}/api/2024-04/graphql.json`, {
       method: 'POST',
@@ -128,9 +136,14 @@ exports.handler = async function(event) {
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Internal Server Error' }),
+      body: JSON.stringify({ error: 'Internal Server Error', details: error.message }),
     };
   }
 
+
+
+
 };
+
+
 
