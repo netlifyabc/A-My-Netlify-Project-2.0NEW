@@ -341,6 +341,15 @@
   }
 }
 
+
+
+.welcome-user {
+  margin-left: auto;
+  padding: 0.5rem 1rem;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
 /* ======================
 /* ③-B 商品推荐网格（6+0.5布局） 
    ====================== */ 
@@ -1105,9 +1114,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+     
 
-
-document.addEventListener('DOMContentLoaded', () => {
+    
+      document.addEventListener('DOMContentLoaded', () => {
   const authModal = document.getElementById('authModal');
   const closeAuthBtn = document.getElementById('closeAuth');
   const authForm = document.getElementById('authForm');
@@ -1116,6 +1126,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const authToggleText = document.getElementById('authToggleText');
   const nameFields = document.getElementById('nameFields');
   const submitBtn = document.getElementById('authSubmitBtn');
+  const signInBtn = document.querySelector('.btn-signin');
+
+  let isRegisterMode = false;
 
   // 消息框
   const messageDiv = document.createElement('div');
@@ -1124,14 +1137,14 @@ document.addEventListener('DOMContentLoaded', () => {
   messageDiv.style.display = 'none';
   authForm.appendChild(messageDiv);
 
-  let isRegisterMode = false;
-
-  // 打开登录弹窗（假设按钮类名是 .btn-signin）
-  document.querySelector('.btn-signin').addEventListener('click', () => {
-    authModal.style.display = 'block';
-    isRegisterMode = false; // 默认登录模式打开
-    updateAuthFormUI();
-  });
+  // 打开登录弹窗
+  if (signInBtn) {
+    signInBtn.addEventListener('click', () => {
+      authModal.style.display = 'block';
+      isRegisterMode = false;
+      updateAuthFormUI();
+    });
+  }
 
   // 关闭弹窗
   if (closeAuthBtn) {
@@ -1148,7 +1161,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateAuthFormUI();
   });
 
-  // 更新表单UI
+  // 更新 UI
   function updateAuthFormUI() {
     if (isRegisterMode) {
       authTitle.textContent = 'Register';
@@ -1162,11 +1175,11 @@ document.addEventListener('DOMContentLoaded', () => {
       authToggleText.innerHTML = 'Don\'t have an account? <a href="#" id="toggleAuthModeLink">Register here</a>';
     }
 
-    // 重新绑定切换事件给动态生成的链接
+    // 动态绑定切换链接
     const newToggle = document.getElementById('toggleAuthModeLink');
     if (newToggle) {
-      newToggle.addEventListener('click', (event) => {
-        event.preventDefault();
+      newToggle.addEventListener('click', (e) => {
+        e.preventDefault();
         toggleAuthMode.click();
       });
     }
@@ -1175,17 +1188,15 @@ document.addEventListener('DOMContentLoaded', () => {
     authForm.reset();
   }
 
-  // 重置表单和消息
+  // 重置表单
   function resetForm() {
     authForm.reset();
     messageDiv.style.display = 'none';
-    if (isRegisterMode) {
-      isRegisterMode = false;
-      updateAuthFormUI();
-    }
+    isRegisterMode = false;
+    updateAuthFormUI();
   }
 
-  // 表单提交处理
+  // 表单提交逻辑
   authForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     messageDiv.style.display = 'none';
@@ -1232,11 +1243,34 @@ document.addEventListener('DOMContentLoaded', () => {
           isRegisterMode = false;
           updateAuthFormUI();
         } else {
-          // 登录成功，返回 token 可能没有 customer 信息
-          messageDiv.textContent = '登录成功! 欢迎您。';
-          // 这里如果需要保存 token，可使用 localStorage.setItem('token', result.accessToken);
+          const customerName = result.customer?.firstName || '用户';
+
+          // 显示欢迎消息
+          messageDiv.textContent = `登录成功! 欢迎您，${customerName}`;
+          messageDiv.classList.remove('error');
+          messageDiv.style.display = 'block';
+
+          // ✅ 关闭弹窗
+          authModal.style.display = 'none';
+
+          // ✅ 存储状态
+          localStorage.setItem('customerName', customerName);
+
+          // ✅ 隐藏登录按钮
+          if (signInBtn) signInBtn.style.display = 'none';
+
+          // ✅ 显示欢迎信息
+          let welcomeDiv = document.getElementById('welcomeUser');
+          if (!welcomeDiv) {
+            welcomeDiv = document.createElement('div');
+            welcomeDiv.id = 'welcomeUser';
+            welcomeDiv.className = 'welcome-user';
+
+            const nav = document.querySelector('nav') || document.body;
+            nav.appendChild(welcomeDiv);
+          }
+          welcomeDiv.textContent = `👋 欢迎, ${customerName}`;
         }
-        messageDiv.classList.remove('error');
       }
     } catch (err) {
       messageDiv.textContent = '请求失败: ' + err.message;
@@ -1251,5 +1285,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html> 
-
 
