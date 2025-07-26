@@ -1,7 +1,13 @@
 // netlify/functions/register.js
 
+// 使用 import() 动态导入，兼容 ESM 模块
+let fetch;
+(async () => {
+  fetch = (await import('node-fetch')).default;
+})();
+
 exports.handler = async function (event) {
-  const ALLOWED_ORIGIN = 'https://netlifyabc.github.io'; // ✅ 修改为你的前端域名
+  const ALLOWED_ORIGIN = 'https://netlifyabc.github.io';
 
   const headers = {
     'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
@@ -10,7 +16,6 @@ exports.handler = async function (event) {
     'Content-Type': 'application/json',
   };
 
-  // 处理预检请求
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
@@ -28,9 +33,6 @@ exports.handler = async function (event) {
   }
 
   try {
-    // 动态导入 node-fetch
-    const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
-
     const { firstName, lastName, email, password } = JSON.parse(event.body);
 
     if (!email || !password || !firstName || !lastName) {
@@ -115,11 +117,12 @@ exports.handler = async function (event) {
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Internal Server Error' }),
+      body: JSON.stringify({
+        error: 'Internal Server Error',
+        message: error.message,
+        stack: error.stack,
+      }),
     };
   }
 };
-
-
-
 
