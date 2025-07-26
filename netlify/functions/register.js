@@ -1,7 +1,5 @@
 // netlify/functions/register.js
 
-const fetch = require('node-fetch');
-
 exports.handler = async function (event) {
   const ALLOWED_ORIGIN = 'https://netlifyabc.github.io'; // ✅ 修改为你的前端域名
 
@@ -30,6 +28,9 @@ exports.handler = async function (event) {
   }
 
   try {
+    // 动态导入 node-fetch
+    const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+
     const { firstName, lastName, email, password } = JSON.parse(event.body);
 
     if (!email || !password || !firstName || !lastName) {
@@ -117,7 +118,6 @@ exports.handler = async function (event) {
       body: JSON.stringify({ error: 'Internal Server Error' }),
     };
   }
-
 };
 
 
