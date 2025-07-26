@@ -220,6 +220,34 @@
   font-size: 20px;
 }
 
+.welcome-user {
+  margin-left: auto;
+  padding: 0.5rem 1rem;
+  font-weight: bold;
+  color: #2c3e50;
+} 
+
+/* ==== 我的订单按钮样式（小尺寸扁平）==== */
+.btn-inline {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  color: #7F187F;
+  background-color: transparent;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.btn-inline:hover {
+  background-color: rgba(127, 24, 127, 0.08);
+  color: #5a115a;
+}
+
 
 /* ==== Cart 按钮（精简质感版） ==== */
 .btn-cart {
@@ -343,12 +371,7 @@
 
 
 
-.welcome-user {
-  margin-left: auto;
-  padding: 0.5rem 1rem;
-  font-weight: bold;
-  color: #2c3e50;
-}
+
 
 /* ======================
 /* ③-B 商品推荐网格（6+0.5布局） 
@@ -481,8 +504,6 @@
 
 
   /* ③-B-2  新增横排区整体容器 */ 
-
-
 
 
   .new-arrivals-section {
@@ -822,6 +843,8 @@
     </svg>
   <span id="signInText">Sign In</span> 
   </a>
+
+   <a href="/orders" id="btnMyOrders" class="btn-inline" style="display: none;">我的订单</a> 
 
  <a href="#" id="btnSignOut" style="display: none; margin-left: 12px; font-size: 14px;">Sign Out</a>
  
@@ -1208,15 +1231,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 更新欢迎界面（登录后）
-  function updateWelcomeUI(name) {
-    if (signInText) {
-      signInText.textContent = `👋 欢迎, ${name}`;
-    }
-    if (signOutBtn) {
-      signOutBtn.style.display = 'inline';
-    }
+ 
+   
+    // 更新欢迎界面（登录后）
+function updateWelcomeUI(name) {
+  if (signInText) {
+    signInText.textContent = `👋 欢迎, ${name}`;
   }
+  if (signOutBtn) {
+    signOutBtn.style.display = 'inline';
+  }
+  const myOrdersBtn = document.getElementById('btnMyOrders');
+  if (myOrdersBtn) {
+    myOrdersBtn.style.display = 'inline-block';
+  }
+}
+
 
   // 恢复未登录状态界面
   function resetWelcomeUI() {
