@@ -1,11 +1,5 @@
 // netlify/functions/register.js
 
-// 使用 import() 动态导入，兼容 ESM 模块
-let fetch;
-(async () => {
-  fetch = (await import('node-fetch')).default;
-})();
-
 exports.handler = async function (event) {
   const ALLOWED_ORIGIN = 'https://netlifyabc.github.io';
 
@@ -16,6 +10,7 @@ exports.handler = async function (event) {
     'Content-Type': 'application/json',
   };
 
+  // 预检请求直接返回
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
@@ -33,6 +28,9 @@ exports.handler = async function (event) {
   }
 
   try {
+    // 动态导入 node-fetch
+    const fetch = (await import('node-fetch')).default;
+
     const { firstName, lastName, email, password } = JSON.parse(event.body);
 
     if (!email || !password || !firstName || !lastName) {
@@ -67,12 +65,7 @@ exports.handler = async function (event) {
     `;
 
     const variables = {
-      input: {
-        firstName,
-        lastName,
-        email,
-        password,
-      },
+      input: { firstName, lastName, email, password },
     };
 
     const response = await fetch(endpoint, {
@@ -124,5 +117,9 @@ exports.handler = async function (event) {
       }),
     };
   }
+
 };
+
+
+
 
