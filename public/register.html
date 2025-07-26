@@ -1159,6 +1159,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const signInBtn = document.querySelector('.btn-signin');
   const signInText = document.getElementById('signInText');
   const signOutBtn = document.getElementById('btnSignOut');
+  const btnMyOrders = document.getElementById('btnMyOrders');  // 新增这一行 
 
   // 创建消息提示区
   const messageDiv = document.createElement('div');
@@ -1235,22 +1236,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
- 
-   
-    // 更新欢迎界面（登录后）
-function updateWelcomeUI(name) {
-  if (signInText) {
-    signInText.textContent = `👋 欢迎, ${name}`;
+   // 更新欢迎界面（登录后）
+  function updateWelcomeUI(name) {
+    if (signInText) {
+      signInText.textContent = `👋 欢迎, ${name}`;
+    }
+    if (signOutBtn) {
+      signOutBtn.style.display = 'inline';
+    }
+    if (btnMyOrders) {
+      btnMyOrders.style.display = 'inline-block';
+    }
   }
-  if (signOutBtn) {
-    signOutBtn.style.display = 'inline';
-  }
-  const myOrdersBtn = document.getElementById('btnMyOrders');
-  if (myOrdersBtn) {
-    myOrdersBtn.style.display = 'inline-block';
-  }
-}
-
 
   // 恢复未登录状态界面
   function resetWelcomeUI() {
@@ -1260,7 +1257,11 @@ function updateWelcomeUI(name) {
     if (signOutBtn) {
       signOutBtn.style.display = 'none';
     }
+    if (btnMyOrders) {
+      btnMyOrders.style.display = 'none';
+    }
   }
+
 
   // 表单提交逻辑
   authForm.addEventListener('submit', async (e) => {
@@ -1348,3 +1349,11 @@ function updateWelcomeUI(name) {
 </script>
 </body>
 </html> 
+
+
+
+
+
+
+
+
