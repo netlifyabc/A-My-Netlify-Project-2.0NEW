@@ -1,6 +1,6 @@
-// netlify/functions/login.js
+const fetch = require('node-fetch');
 
-exports.handler = async function(event) {
+exports.handler = async function (event) {
   const ALLOWED_ORIGIN = 'https://netlifyabc.github.io';
 
   const headers = {
@@ -10,7 +10,6 @@ exports.handler = async function(event) {
     'Content-Type': 'application/json',
   };
 
-  // 预检请求处理
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
@@ -30,9 +29,6 @@ exports.handler = async function(event) {
   try {
     const { email, password } = JSON.parse(event.body);
 
-    // 这里写你的 Shopify 登录逻辑或模拟登录验证，例子里直接模拟成功返回
-    // 你可以改成真正的调用 Shopify API 验证用户密码
-
     if (!email || !password) {
       return {
         statusCode: 400,
@@ -41,26 +37,99 @@ exports.handler = async function(event) {
       };
     }
 
-    // 模拟登录成功响应
+    const SHOPIFY_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN;
+    const STOREFRONT_API_VERSION = process.env.SHOPIFY_API_VERSION || '2024-04';
+    const STOREFRONT_TOKEN = process.env.SHOPIFY_STOREFRONT_TOKEN;
+
+    const endpoint = `https://${SHOPIFY_DOMAIN}/api/${STOREFRONT_API_VERSION}/graphql.json`;
+
+    // Step 1: 创建访问令牌
+    const createTokenQuery = `
+      mutation customerAccessTokenCreate($input: CustomerAccessTokenCreateInput!) {
+        customerAccessTokenCreate(input: $input) {
+          customerAccessToken {
+            accessToken
+            expiresAt
+          }
+          customerUserErrors {
+            field
+            message
+          }
+        }
+      }
+    `;
+
+    const tokenResponse = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Shopify-Storefront-Access-Token': STOREFRONT_TOKEN,
+      },
+      body: JSON.stringify({
+        query: createTokenQuery,
+        variables: { input: { email, password } },
+      }),
+    });
+
+    const tokenResult = await tokenResponse.json();
+
+    const errors = tokenResult.data.customerAccessTokenCreate.customerUserErrors;
+    const tokenInfo = tokenResult.data.customerAccessTokenCreate.customerAccessToken;
+
+    if (errors.length > 0 || !tokenInfo) {
+      return {
+        statusCode: 401,
+        headers,
+        body: JSON.stringify({ error: errors[0]?.message || 'Authentication failed' }),
+      };
+    }
+
+    // Step 2: 用访问令牌查询客户信息
+    const customerQuery = `
+      query {
+        customer(customerAccessToken: "${tokenInfo.accessToken}") {
+          firstName
+          lastName
+          email
+          id
+        }
+      }
+    `;
+
+    const customerResponse = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Shopify-Storefront-Access-Token': STOREFRONT_TOKEN,
+      },
+      body: JSON.stringify({ query: customerQuery }),
+    });
+
+    const customerResult = await customerResponse.json();
+
+    const customer = customerResult.data?.customer;
+
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({
         message: 'Login successful',
-        customer: {
-          id: 'mocked-customer-id-123',
-          firstName: '张',
-          lastName: '三',
-          email,
-        },
+        token: tokenInfo.accessToken,
+        expiresAt: tokenInfo.expiresAt,
+        customer,
       }),
     };
-
   } catch (error) {
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Internal Server Error' }),
+      body: JSON.stringify({ error: 'Internal Server Error', detail: error.message }),
     };
   }
 };
+
+
+
+
+
+
