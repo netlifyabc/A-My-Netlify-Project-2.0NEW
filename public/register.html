@@ -227,6 +227,9 @@
   color: #2c3e50;
 } 
 
+
+/* ==== 统一风格小按钮（用于 Sign Out 和 我的订单） ==== */ 
+
 /* ==== 我的订单按钮样式（小尺寸扁平）==== */
 .btn-inline {
   display: inline-flex;
@@ -247,6 +250,7 @@
   background-color: rgba(127, 24, 127, 0.08);
   color: #5a115a;
 }
+
 
 
 /* ==== Cart 按钮（精简质感版） ==== */
@@ -368,8 +372,6 @@
     padding: 0.6rem 1.6rem;
   }
 }
-
-
 
 
 
@@ -846,7 +848,9 @@
 
    <a href="/orders" id="btnMyOrders" class="btn-inline" style="display: none;">我的订单</a> 
 
- <a href="#" id="btnSignOut" style="display: none; margin-left: 12px; font-size: 14px;">Sign Out</a>
+
+   <a href="#" id="btnSignOut" class="btn-inline" style="display: none;">Sign Out</a>
+
  
   <a href="#" class="btn-cart">
     <!-- 购物车图标 -->
@@ -1343,5 +1347,4 @@ function updateWelcomeUI(name) {
 
 </script>
 </body>
-
 </html> 
