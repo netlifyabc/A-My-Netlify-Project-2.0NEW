@@ -13,7 +13,7 @@ exports.handler = async function(event) {
       body: '',
     };
   }
-
+ 
   return {
     statusCode: 200,
     headers,
